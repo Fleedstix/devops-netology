@@ -58,4 +58,4 @@
 > 78b12205587fe839f10d946ea3fdc06719decb05
 
 7. Кто автор функции synchronizedWriters?
-> В данном репозитории не существует такой функции.
+> Функция была создана автором: Martin Atkins <mart@degeneration.co.uk>
