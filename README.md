@@ -3,14 +3,29 @@
 
 # Домашнее задание к занятию «2.4. Инструменты Git»
 1. Найдите полный хеш и комментарий коммита, хеш которого начинается на aefea.
+> git show aefea
+
 >    commit aefead2207ef7e2aa5dc81a34aedf0cad4c32545
     Update CHANGELOG.md
 2. Какому тегу соответствует коммит 85024d3?
->     (tag: v0.12.23)
+> git show 85024d3
+
+> (tag: v0.12.23)
 3. Сколько родителей у коммита b8d720? Напишите их хеши.
->    Два родителя, т.к это мердж коммит 56cd7859e05c36c06b56d013b55a252d0bb7e158 и
+> git show b8d720
+
+>  Два родителя, т.к это мердж коммит
+
+> git show b8d720^
+
+> 56cd7859e05c36c06b56d013b55a252d0bb7e158
+
+>git show b8d720^2
+
 > 9ea88f22fc6269854151c571162c5bcf958bee2b
 4. Перечислите хеши и комментарии всех коммитов которые были сделаны между тегами v0.12.23 и v0.12.24.
+> git show --oneline v0.12.23..v0.12.24
+
 > b14b74c4939dcab573326f4e3ee2a62e23e12f89
     [Website] vmc provider links
 
@@ -45,9 +60,26 @@
 > 225466bc3e5f35baa5d07197bbc079345b77525e
     Cleanup after v0.12.23 releasec
 5. Найдите коммит в котором была создана функция func providerSource, ее определение в коде выглядит так func providerSource(...) (вместо троеточего перечислены аргументы).
+> Ищу файл где создается функция providerSource
+
+> git grep -n providerSource
+
+> Функций создается в файле provider_source.go, делаю поиск по изменению функции
+
+> git log -L :providerSource:provider_source.go
+
+> Функция создается в коммите
 > 8c928e83589d90a031f811fae52a81be7153e82f
 6. Найдите все коммиты в которых была изменена функция globalPluginDirs
-> 8364383c359a6b738a436d1b7745ccdce178df47 (Создание функции)
+> Ищу файл где создается функция globalPluginDirs
+
+>git grep -n globalPluginDirs
+
+> Функция создается в файле plugins.go, делаю поиск по изменениям функции
+
+>git log -L :globalPluginDirs:plugins.go
+
+> 8364383c359a6b738a436d1b7745ccdce178df47
 
 > 66ebff90cdfaa6938f26f908c7ebad8d547fea17
 
@@ -58,4 +90,8 @@
 > 78b12205587fe839f10d946ea3fdc06719decb05
 
 7. Кто автор функции synchronizedWriters?
+> Ищу когда функция была добавлена или удалена из кода
+
+> git log -S synchronizedWriters
+
 > Функция была создана автором: Martin Atkins <mart@degeneration.co.uk>
