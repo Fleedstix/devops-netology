@@ -1,116 +1,127 @@
-# Домашнее задание к занятию "3.3. Операционные системы, лекция 1"
+# Домашнее задание к занятию "3.4. Операционные системы, лекция 2"
 
-1. > Какой системный вызов делает команда cd? В прошлом ДЗ мы выяснили, что cd не является самостоятельной программой, это shell builtin, поэтому запустить strace непосредственно на cd не получится. Тем не менее, вы можете запустить strace на /bin/bash -c 'cd /tmp'. В этом случае вы увидите полный список системных вызовов, которые делает сам bash при старте. Вам нужно найти тот единственный, который относится именно к cd.
+> 1. На лекции мы познакомились с node_exporter. В демонстрации его исполняемый файл запускался в background. Этого достаточно для демо, но не для настоящей production-системы, где процессы должны находиться под внешним управлением. Используя знания из лекции по systemd, создайте самостоятельно простой unit-файл для node_exporter:
+> * поместите его в автозагрузку,
+> * предусмотрите возможность добавления опций к запускаемому процессу через внешний файл (посмотрите, например, на systemctl cat cron),
+> * удостоверьтесь, что с помощью systemctl процесс корректно стартует, завершается, а после перезагрузки автоматически поднимается.
+```bash
+wget https://github.com/prometheus/node_exporter/releases/download/v1.1.2/node_exporter-1.1.2.linux-amd64.tar.gz
 
-К cd относится системный вызов chdir("/tmp")
+tar xvfz node_exporter-*.*-amd64.tar.gz
 
-2. > Попробуйте использовать команду file на объекты разных типов на файловой системе. Например: ``` vagrant@netology1:~$ file /dev/tty
-/dev/tty: character special (5/0)
-vagrant@netology1:~$ file /dev/sda
-/dev/sda: block special (8/0)
-vagrant@netology1:~$ file /bin/bash
-/bin/bash: ELF 64-bit LSB shared object, x86-64 ```
-Используя strace выясните, где находится база данных file на основании которой она делает свои догадки.
+sudo mv node_exporter-1.1.2.linux-amd64/node_exporter /usr/local/bin/
 
-/usr/share/misc/magic файл определения типов
+sudo vi /etc/systemd/system/node_exporter.service
 
-3. > Предположим, приложение пишет лог в текстовый файл. Этот файл оказался удален (deleted в lsof), однако возможности сигналом сказать приложению переоткрыть файлы или просто перезапустить приложение – нет. Так как приложение продолжает писать в удаленный файл, место на диске постепенно заканчивается. Основываясь на знаниях о перенаправлении потоков предложите способ обнуления открытого удаленного файла (чтобы освободить место на файловой системе).
 
-Необходимо найти файловый дескриптор удаленного файла и обнулить файл.
 
-находим процессы где файлы помечены как deleted
+[Unit]
+Description=Node Exporter
+After=network.target
+ 
+[Service]
+EnvironmentFile=-/etc/default/node_exporter
+User=root
+Group=root
+Type=simple
+ExecStart=/usr/local/bin/node_exporter
+ 
+[Install]
+WantedBy=multi-user.target
+
+
+
+sudo systemctl daemon-reload
+sudo systemctl start node_exporter
+
+root@vagrant:/etc/systemd/system# sudo systemctl status node_exporter
+● node_exporter.service - Node Exporter
+     Loaded: loaded (/etc/systemd/system/node_exporter.service; disabled; vendor preset: enabled)
+     Active: active (running) since Thu 2021-07-08 17:13:01 UTC; 3s ago
+   Main PID: 1113 (node_exporter)
+      Tasks: 4 (limit: 2280)
+     Memory: 2.2M
+     CGroup: /system.slice/node_exporter.service
+             └─1113 /usr/local/bin/node_exporter
+
+Jul 08 17:13:01 vagrant node_exporter[1113]: level=info ts=2021-07-08T17:13:01.261Z caller=node_exporter.go:113 collector=thermal_zone
+Jul 08 17:13:01 vagrant node_exporter[1113]: level=info ts=2021-07-08T17:13:01.261Z caller=node_exporter.go:113 collector=time
+Jul 08 17:13:01 vagrant node_exporter[1113]: level=info ts=2021-07-08T17:13:01.261Z caller=node_exporter.go:113 collector=timex
+Jul 08 17:13:01 vagrant node_exporter[1113]: level=info ts=2021-07-08T17:13:01.261Z caller=node_exporter.go:113 collector=udp_queues
+Jul 08 17:13:01 vagrant node_exporter[1113]: level=info ts=2021-07-08T17:13:01.261Z caller=node_exporter.go:113 collector=uname
+Jul 08 17:13:01 vagrant node_exporter[1113]: level=info ts=2021-07-08T17:13:01.261Z caller=node_exporter.go:113 collector=vmstat
+Jul 08 17:13:01 vagrant node_exporter[1113]: level=info ts=2021-07-08T17:13:01.261Z caller=node_exporter.go:113 collector=xfs
+Jul 08 17:13:01 vagrant node_exporter[1113]: level=info ts=2021-07-08T17:13:01.262Z caller=node_exporter.go:113 collector=zfs
+Jul 08 17:13:01 vagrant node_exporter[1113]: level=info ts=2021-07-08T17:13:01.262Z caller=node_exporter.go:195 msg="Listening on" address=:9100
+Jul 08 17:13:01 vagrant node_exporter[1113]: level=info ts=2021-07-08T17:13:01.262Z caller=tls_config.go:191 msg="TLS is disabled." http2=false
 ```
-lsof | grep deleted
-```
-и видим PID, FD процесса, и местоположение файла
-```
-[root@vagrant:/opt/kafka/logs]$ lsof | grep deleted
- COMMAND  PID     USER   FD   TYPE DEVICE SIZE/OFF NLINK   NODE NAME
- java    1763     root   4r   REG  252,1   255986     0 262629 /opt/kafka/log/huge-file.log (deleted)
-```
-можем просмотреть информацию по процессу ps -p 1763
+> 2. Ознакомьтесь с опциями node_exporter и выводом /metrics по-умолчанию. Приведите несколько опций, которые вы бы выбрали для базового мониторинга хоста по CPU, памяти, диску и сети.
 
-Укорачиваем файл до 0 байт
-```
-sudo truncate -s 0 /proc/1763/fd/4
-```
+/metrics выводятся в веб интерфейс по адресу http://адрес_сервера:9100/metrics
+
+опции:
+
+* --collector.cpu
+* --collector.meminfo
+* --collector.diskstats
+* --collector.netstat
+
+>3. Установите в свою виртуальную машину Netdata. Воспользуйтесь готовыми пакетами для установки (sudo apt install -y netdata). После успешной установки:
+в конфигурационном файле /etc/netdata/netdata.conf в секции [web] замените значение с localhost на bind to = 0.0.0.0,
+добавьте в Vagrantfile проброс порта Netdata на свой локальный компьютер и сделайте vagrant reload:
+config.vm.network "forwarded_port", guest: 19999, host: 19999
+После успешной перезагрузки в браузере на своем ПК (не в виртуальной машине) вы должны суметь зайти на localhost:19999. Ознакомьтесь с метриками, которые по умолчанию собираются Netdata и с комментариями, которые даны к этим метрикам.
+
+Настройка выполнена, метрики стали доступны в веб-интерфейсе
+![netdata](/images/netdata.png)
 
 
-4. > Занимают ли зомби-процессы какие-то ресурсы в ОС (CPU, RAM, IO)?
+>4. Можно ли по выводу dmesg понять, осознает ли ОС, что загружена не на настоящем оборудовании, а на системе виртуализации?
 
-Нет, не занимает. При завершении процесс освобождает все свои ресурсы, остается только запись со статусом завершения в таблице процессов.
+Можно, dmesg говорит что на машине используется BIOS VirtualBox
 
-5. > В iovisor BCC есть утилита opensnoop:
-``` 
-root@vagrant:~# dpkg -L bpfcc-tools | grep sbin/opensnoop
-/usr/sbin/opensnoop-bpfcc 
-```
-> На какие файлы вы увидели вызовы группы open за первую секунду работы утилиты? Воспользуйтесь пакетом bpfcc-tools для Ubuntu 20.04. Дополнительные сведения по установке.
+[    0.000000] DMI: innotek GmbH VirtualBox/VirtualBox, BIOS VirtualBox 12/01/2006
+[    0.000000] Hypervisor detected: KVM
 
-За первую секунду работы утилиты нет ниодного вызова к файлу группы open, за 5,10,30,60 секунд нет вызова тоже
+>5. Как настроен sysctl fs.nr_open на системе по-умолчанию? Узнайте, что означает этот параметр. Какой другой существующий лимит не позволит достичь такого числа (ulimit --help)?
 
-```
-root@vagrant:/usr/sbin# ./opensnoop-bpfcc -d 1 -n open
-PID    COMM               FD ERR PATH
-```
+Параметр fs.nr_open означает лимит количества открытых дескрипторов
+fs.nr_open = 1048576
 
-6. > Какой системный вызов использует uname -a? Приведите цитату из man по этому системному вызову, где описывается альтернативное местоположение в /proc, где можно узнать версию ядра и релиз ОС.
+Другой существующий лимит
+vagrant@vagrant:~$ ulimit -n
+1024
 
-Системный вызов
-uname({sysname="Linux", nodename="vagrant", ...})
-
-man uname:
-```
---version
-output version information and exit
-```
-cat /proc/version
-
-```
-Linux version 5.4.0-73-generic (buildd@lcy01-amd64-019) (gcc version 9.3.0 (Ubuntu 9.3.0-17ubuntu1~20.04)) #82-Ubuntu SMP Wed Apr 14 17:39:42 UTC 2021
-```
-
-7. > Чем отличается последовательность команд через ; и через && в bash? Например:
-```
-root@netology1:~# test -d /tmp/some_dir; echo Hi
-Hi
-root@netology1:~# test -d /tmp/some_dir && echo Hi
-root@netology1:~#
-```
-Выполняя команды через && Вторая команда начнет своё выполнение только если первая завершится с успешным кодом возврата
-
-Выполняя же команды через ; вторая запустится независимо от кода выхода первой команды.
-
-> Есть ли смысл использовать в bash &&, если применить set -e?
-
-Смысла есть, т.к set -e устанавливает параметр оболочки с которым выполнение будет завершаться при возвращении одной из команд не нулевого значения, но задается для каждой оболочки отдельно, я считаю это менее удобно
-
-8. > Из каких опций состоит режим bash set -euxo pipefail и почему его хорошо было бы использовать в сценариях?
-
-из опций
--e оболочка завершает работу если одна из команд завершает свою работу с ненулевым значений
-
--u незаданные параметры, отличные от специальных будут трактоваться как ошибка при выполнения расширения параметров
-
--x будет печататься трассировка простых команд, команд for,case,select
-
--o установка параметра с полным именем
-
--pipefail возвращает успех если в конвейере ни одна команда не завершилась не удачно 
-
-Потому что данные параметры защищают от ошибок в выполнении сценария о которых мы можем не узнать, т.к сценарий завершился успешно.
-
-9. > Используя -o stat для ps, определите, какой наиболее часто встречающийся статус у процессов в системе. В man ps ознакомьтесь (/PROCESS STATE CODES) что значат дополнительные к основной заглавной буквы статуса процессов. Его можно не учитывать при расчете (считать S, Ss или Ssl равнозначными).
+> 6. Запустите любой долгоживущий процесс (не ls, который отработает мгновенно, а, например, sleep 1h) в отдельном неймспейсе процессов; покажите, что ваш процесс работает под PID 1 через nsenter. Для простоты работайте в данном задании под root (sudo -i). Под обычным пользователем требуются дополнительные опции (--map-root-user) и т.д.
 
 ```
-root@vagrant:/home/vagrant/bcc/build# ps -o stat
-STAT
-T
-T
-S
-S
-S
-R+
+root@vagrant:~# unshare -f --pid --mount-proc /bin/bash
+root@vagrant:~# ps aux
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  0.0  0.1   9836  3912 pts/1    S    20:25   0:00 /bin/bash
+
+root@vagrant:/# ps aux | grep bash
+root       16480  0.0  0.0   8080   528 pts/1    S    20:25   0:00 unshare -f --pid --mount-proc /bin/bash
+root       16481  0.0  0.1   9836  3912 pts/1    S+   20:25   0:00 /bin/bash
+
+root@vagrant:/# nsenter --target 16481 --pid --mount
+root@vagrant:/# ps aux 
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  0.0  0.1   9836  3912 pts/1    S    20:25   0:00 /bin/bash
 ```
-Наиболее частый статус -T - остановлен заданием сигнала управления
--t - остановлен отладчиком во время трассировки 
+>7. Найдите информацию о том, что такое :(){ :|:& };:. Запустите эту команду в своей виртуальной машине Vagrant с Ubuntu 20.04 (это важно, поведение в других ОС не проверялось). Некоторое время все будет "плохо", после чего (минуты) – ОС должна стабилизироваться. Вызов dmesg расскажет, какой механизм помог автоматической стабилизации. Как настроен этот механизм по-умолчанию, и как изменить число процессов, которое можно создать в сессии?
+
+Данная команда вызывает функцию, которая запускает два своих экземпляра, каждый экземпляр ещё по два, таким образом колличетсво экземпляра растёт в прогрессии.
+
+Когда колличество процессов достигает лимита ulimit -u, функция более не может создавать свои экземпляры
+
+изменить число процессов, которое можно создать в сессии можно в файле /etc/security/limits.conf
+
+строкой 
+
+*(пользователь) hard(тип ограничения жесткое/мягкое) nproc(процессы) 50(наш задаваемый лимит)
+
+
+
+
+
