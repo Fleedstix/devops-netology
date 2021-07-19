@@ -8,14 +8,30 @@ vagrant@vagrant:~$ telnet stackoverflow.com 80
 Trying 151.101.193.69...
 Connected to stackoverflow.com.
 Escape character is '^]'.
-GET /questions HTTP/1.0 Host: stackoverflow.com
+GET /questions HTTP/1.0
+Host: stackoverflow.com
 
-HTTP/1.1 400 Bad Request
+HTTP/1.1 301 Moved Permanently
+cache-control: no-cache, no-store, must-revalidate
+location: https://stackoverflow.com/questions
+x-request-guid: 62e0e8d6-cb75-44d9-b4d3-65074706834e
+feature-policy: microphone 'none'; speaker 'none'
+content-security-policy: upgrade-insecure-requests; frame-ancestors 'self' https://stackexchange.com
+Accept-Ranges: bytes
+Date: Mon, 19 Jul 2021 13:55:38 GMT
+Via: 1.1 varnish
 Connection: close
-Content-Length: 0
+X-Served-By: cache-hel6826-HEL
+X-Cache: MISS
+X-Cache-Hits: 0
+X-Timer: S1626702939.553890,VS0,VE101
+Vary: Fastly-SSL
+X-DNS-Prefetch-Control: off
+Set-Cookie: prov=e4510133-d3cf-f18c-0be6-ea33aaa9144f; domain=.stackoverflow.com; expires=Fri, 01-Jan-2055 00:00:00 GMT; path=/; HttpOnly
 
 Connection closed by foreign host.
 ```
+Код 301 возвращается в случае, когда запрошенный ресурс был на постоянной основе перемещён в новое месторасположение, и указывающий на то, что текущие ссылки, использующие данный URL, должны быть обновлены.
 
 Ошибка 400 означает что сервер не смог обработать запрос, из-за неверного синтаксиса.
 
