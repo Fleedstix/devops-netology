@@ -1249,3 +1249,221 @@ linux
 ```
 sudo ip neigh flush 10.10.10.105 
 ```
+# Домашнее задание к занятию "3.8. Компьютерные сети, лекция 3"
+
+> 1. Подключитесь к публичному маршрутизатору в интернет. Найдите маршрут к вашему публичному IP
+
+```
+vagrant@vagrant:~$ telnet route-views.routeviews.org
+Trying 128.223.51.103...
+Connected to route-views.routeviews.org.
+Escape character is '^]'.
+C
+**********************************************************************
+
+                    RouteViews BGP Route Viewer
+                    route-views.routeviews.org
+
+ route views data is archived on http://archive.routeviews.org
+
+ This hardware is part of a grant by the NSF.
+ Please contact help@routeviews.org if you have questions, or
+ if you wish to contribute your view.
+
+ This router has views of full routing tables from several ASes.
+ The list of peers is located at http://www.routeviews.org/peers
+ in route-views.oregon-ix.net.txt
+
+ NOTE: The hardware was upgraded in August 2014.  If you are seeing
+ the error message, "no default Kerberos realm", you may want to
+ in Mac OS X add "default unset autologin" to your ~/.telnetrc
+
+ To login, use the username "rviews".
+
+ **********************************************************************
+
+
+User Access Verification
+
+Username: rviews
+route-views>show ip route 188.234.213.175
+Routing entry for 188.234.192.0/18
+  Known via "bgp 6447", distance 20, metric 0
+  Tag 6939, type external
+  Last update from 64.71.137.241 7w0d ago
+  Routing Descriptor Blocks:
+  * 64.71.137.241, from 64.71.137.241, 7w0d ago
+      Route metric is 0, traffic share count is 1
+      AS Hops 6
+      Route tag 6939
+      MPLS label: none
+route-views>show bgp 188.234.213.175
+BGP routing table entry for 188.234.192.0/18, version 56063966
+Paths: (25 available, best #23, table default)
+  Not advertised to any peer
+  Refresh Epoch 1
+  20912 3257 9002 9049 51604 51604 51604 51604
+    212.66.96.126 from 212.66.96.126 (212.66.96.126)
+      Origin IGP, localpref 100, valid, external
+      Community: 3257:8052 3257:50001 3257:54900 3257:54901 20912:65004 65535:65284
+      path 7FE16E0391C8 RPKI State not found
+      rx pathid: 0, tx pathid: 0
+  Refresh Epoch 1
+  3561 3910 3356 9002 9002 9002 9002 9002 9049 51604 51604 51604 51604
+    206.24.210.80 from 206.24.210.80 (206.24.210.80)
+      Origin IGP, localpref 100, valid, external
+      path 7FE0EC3E6CB8 RPKI State not found
+      rx pathid: 0, tx pathid: 0
+  Refresh Epoch 1
+  3267 9049 51604 51604 51604 51604
+    194.85.40.15 from 194.85.40.15 (185.141.126.1)
+      Origin incomplete, metric 0, localpref 100, valid, external
+      path 7FE129D5C328 RPKI State not found
+      rx pathid: 0, tx pathid: 0
+  Refresh Epoch 1
+  3333 9002 9049 51604 51604 51604 51604
+    193.0.0.56 from 193.0.0.56 (193.0.0.56)
+      Origin IGP, localpref 100, valid, external
+      path 7FE0CE0405B0 RPKI State not found
+      rx pathid: 0, tx pathid: 0
+  Refresh Epoch 1
+  3549 3356 9002 9002 9002 9002 9002 9049 51604 51604 51604 51604
+    208.51.134.254 from 208.51.134.254 (67.16.168.191)
+      Origin IGP, metric 0, localpref 100, valid, external
+      Community: 3356:2 3356:22 3356:100 3356:123 3356:503 3356:903 3356:2067 3549:2581 3549:30840
+      path 7FE0A40E19C8 RPKI State not found
+      rx pathid: 0, tx pathid: 0
+  Refresh Epoch 1
+  3356 9002 9002 9002 9002 9002 9049 51604 51604 51604 51604
+    4.68.4.46 from 4.68.4.46 (4.69.184.201)
+      Origin IGP, metric 0, localpref 100, valid, external
+      Community: 3356:2 3356:22 3356:100 3356:123 3356:503 3356:903 3356:2067
+      path 7FE12B9B1570 RPKI State not found
+      rx pathid: 0, tx pathid: 0
+  Refresh Epoch 1
+  53767 174 174 1299 9049 9049 51604 51604 51604 51604
+    162.251.163.2 from 162.251.163.2 (162.251.162.3)
+      Origin incomplete, localpref 100, valid, external
+      Community: 174:21000 174:22013 53767:5000
+      path 7FE0A54C5400 RPKI State not found
+      rx pathid: 0, tx pathid: 0
+  Refresh Epoch 1
+  701 1299 9049 9049 51604 51604 51604 51604
+    137.39.3.55 from 137.39.3.55 (137.39.3.55)
+      Origin incomplete, localpref 100, valid, external
+      path 7FE090D67240 RPKI State not found
+      rx pathid: 0, tx pathid: 0
+  Refresh Epoch 1
+  852 6453 9002 9049 51604 51604 51604 51604
+    154.11.12.212 from 154.11.12.212 (96.1.209.43)
+
+route-views>Connection closed by foreign host.
+```
+
+> 2. Создайте dummy0 интерфейс в Ubuntu. Добавьте несколько статических маршрутов. Проверьте таблицу маршрутизации.
+
+```
+vagrant@vagrant:~$ sudo ip link add dummy0 type dummy
+vagrant@vagrant:~$ sudo ip addr add 1.1.1.1/24 dev dummy0
+vagrant@vagrant:~$ sudo ip link set dummy0 up
+vagrant@vagrant:~$ ifconfig -a
+dummy0: flags=195<UP,BROADCAST,RUNNING,NOARP>  mtu 1500
+        inet 1.1.1.1  netmask 255.255.255.0  broadcast 0.0.0.0
+        inet6 fe80::88a5:18ff:fe1f:1baa  prefixlen 64  scopeid 0x20<link>
+        ether 8a:a5:18:1f:1b:aa  txqueuelen 1000  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 2  bytes 140 (140.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.10.10.107  netmask 255.255.255.0  broadcast 10.10.10.255
+        inet6 fe80::a00:27ff:fee3:90c5  prefixlen 64  scopeid 0x20<link>
+        ether 08:00:27:e3:90:c5  txqueuelen 1000  (Ethernet)
+        RX packets 7802  bytes 1713449 (1.7 MB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 3206  bytes 327661 (327.6 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 85  bytes 7804 (7.8 KB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 85  bytes 7804 (7.8 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+
+vagrant@vagrant:~$ sudo  ip route add 172.16.10.0/24 dev dummy0
+vagrant@vagrant:~$ sudo ip route add 192.168.0.0/24 via 1.1.1.1
+vagrant@vagrant:~$ ip -br route
+default via 10.10.10.1 dev eth0 proto dhcp src 10.10.10.107 metric 100
+1.1.1.0/24 dev dummy0 proto kernel scope link src 1.1.1.1
+10.10.10.0/24 dev eth0 proto kernel scope link src 10.10.10.107
+10.10.10.1 dev eth0 proto dhcp scope link src 10.10.10.107 metric 100
+172.16.10.0/24 dev dummy0 scope link
+192.168.0.0/24 via 1.1.1.1 dev dummy0
+
+```
+
+> 3. Проверьте открытые TCP порты в Ubuntu, какие протоколы и приложения используют эти порты? Приведите несколько примеров.
+```
+vagrant@vagrant:~$ sudo netstat -tlpn
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+tcp        0      0 0.0.0.0:111             0.0.0.0:*               LISTEN      1/init
+tcp        0      0 127.0.0.53:53           0.0.0.0:*               LISTEN      720/systemd-resolve
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      798/sshd: /usr/sbin
+tcp6       0      0 :::111                  :::*                    LISTEN      1/init
+tcp6       0      0 :::22                   :::*                    LISTEN      798/sshd: /usr/sbin
+
+22 - порт ssh, сетевой протокол прикладного уровня, позволяющий производить удалённое управление операционной системой и туннелирование TCP-соединений
+
+53- порт systemd-resolve, выполняющая разрешение сетевых имён для локальных приложений посредством D-Bus
+
+111 - порт init, система удаленного вызова процедур
+
+```
+
+> 4. Проверьте используемые UDP сокеты в Ubuntu, какие протоколы и приложения используют эти порты?
+
+```
+vagrant@vagrant:~$ sudo netstat -ulpn
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+udp        0      0 127.0.0.53:53           0.0.0.0:*                           720/systemd-resolve
+udp        0      0 10.10.10.107:68         0.0.0.0:*                           448/systemd-network
+udp        0      0 0.0.0.0:111             0.0.0.0:*                           1/init
+udp6       0      0 :::111                  :::*                                1/init
+udp6       0      0 fe80::a00:27ff:fee3:546 :::*                                448/systemd-network
+
+68 - порт systemd-networkd, системный демон для управления сетевыми настройками.
+
+```
+
+> 5. Используя diagrams.net, создайте L3 диаграмму вашей домашней сети или любой другой сети, с которой вы работали.
+
+![diagram](/images/diagram.png)
+
+> 6. Установите Nginx, настройте в режиме балансировщика TCP или UDP.
+
+```
+vagrant@vagrant:~$ sudo apt-get install nginx
+vagrant@vagrant:~$ sudo sudo systemctl enable nginx
+vagrant@vagrant:~$ sudo sudo systemctl start nginx
+vagrant@vagrant:~$ sudo sudo systemctl status nginx
+● nginx.service - A high performance web server and a reverse proxy server
+     Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)
+     Active: active (running) since Wed 2021-07-21 13:29:28 UTC; 19s ago
+       Docs: man:nginx(8)
+   Main PID: 36141 (nginx)
+      Tasks: 3 (limit: 1072)
+     Memory: 5.7M
+     CGroup: /system.slice/nginx.service
+             ├─36141 nginx: master process /usr/sbin/nginx -g daemon on; master_process on;
+             ├─36142 nginx: worker process
+             └─36143 nginx: worker process
+
+Jul 21 13:29:28 vagrant systemd[1]: Starting A high performance web server and a reverse proxy server...
+Jul 21 13:29:28 vagrant systemd[1]: Started A high performance web server and a reverse proxy server.
