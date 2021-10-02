@@ -172,7 +172,7 @@ test_db=# SELECT count(*) FROM orders;
 Иоганн Себастьян Бах	Гитара
 ```
 > Приведите SQL-запросы для выполнения данных операций.
-
+```
 UPDATE public.clients
 	SET заказ=3
 	WHERE id=1;
@@ -182,6 +182,7 @@ UPDATE public.clients
 UPDATE public.clients
 	SET заказ=5
 	WHERE id=3;
+```
 
 > 4.  Приведите SQL-запрос для выдачи всех пользователей, которые совершили заказ, а также вывод данного запроса.
 ```
