@@ -218,8 +218,17 @@ pg_dump test_db > dump2
 
 docker-compose down
 
+CREATE DATABASE test_db;
+
+CREATE USER "test-admin-user" WITH password 'qwerty';
+
+CREATE USER "test-simple-user" WITH password 'qwerty';
+
 psql test_db < dump2
 
 ```
 
 [dump](./1/dump2)
+
+![psql](./1/psql.png)
+![tables](./1/tables.png)
