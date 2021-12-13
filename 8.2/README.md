@@ -42,9 +42,9 @@
       tags: java
 - name: Install Elasticsearch
   hosts: elasticsearch # play будет отрабатывать на группе хостов elasticsearch 
+  become: true
   tasks:
     - name: Upload tar.gz Elasticsearch from remote URL
-      become: true
       get_url: # скачиваем архив с эластиком
         url: "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-{{ elastic_version }}-linux-x86_64.tar.gz"
         dest: "/tmp/elasticsearch-{{ elastic_version }}-linux-x86_64.tar.gz"
@@ -56,13 +56,11 @@
       until: get_elastic is succeeded
       tags: elastic
     - name: Create directrory for Elasticsearch
-      become: true
       file:
         state: directory
         path: "{{ elastic_home }}"
       tags: elastic
     - name: Extract Elasticsearch in the installation directory
-      become: true
       unarchive:
         copy: false
         src: "/tmp/elasticsearch-{{ elastic_version }}-linux-x86_64.tar.gz"
@@ -72,16 +70,15 @@
       tags:
         - elastic
     - name: Set environment Elastic
-      become: true
       template:
         src: templates/elk.sh.j2
         dest: /etc/profile.d/elk.sh
       tags: elastic
 - name: Install kibana
-  hosts: elasticsearch
+  hosts: kibana
+  become: true
   tasks:
     - name: download kibana
-      become: true
       get_url:
         url: "https://artifacts.elastic.co/downloads/kibana/kibana-{{ kibana_version }}-linux-x86_64.tar.gz"
         dest: "/tmp/kibana-{{ kibana_version }}-linux-x86_64.tar.gz"
@@ -93,13 +90,11 @@
       until: get_kibana is succeeded
       tags: kibana
     - name: Create directrory for kibana
-      become: true
       file:
         state: directory
         path: "{{ kibana_home }}"
       tags: kibana
     - name: Extract kibana in the installation directory
-      become: true
       unarchive:
         copy: false
         src: "/tmp/kibana-{{ kibana_version }}-linux-x86_64.tar.gz"
@@ -109,7 +104,6 @@
       tags:
         - kibana
     - name: Set environment kibana
-      become: true
       template:
         src: templates/kibana.sh.j2
         dest: /etc/profile.d/kibana.sh
