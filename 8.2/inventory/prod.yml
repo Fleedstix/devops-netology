@@ -1,0 +1,11 @@
+---
+elasticsearch:
+  hosts:
+    172.16.16.102:
+      ansible_connection: ssh
+      ansible_user: vagrant
+kibana:
+  hosts:
+    172.16.16.101:
+      ansible_connection: ssh
+      ansible_user: vagrant
