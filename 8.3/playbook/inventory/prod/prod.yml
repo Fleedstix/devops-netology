@@ -1,0 +1,16 @@
+---
+elasticsearch:
+  hosts:
+    172.42.42.101:
+      ansible_connection: ssh
+      ansible_user: vagrant
+kibana:
+  hosts:
+    172.42.42.102:
+      ansible_connection: ssh
+      ansible_user: vagrant
+filebeat:
+  hosts:
+    172.42.42.103:
+      ansible_connection: ssh
+      ansible_user: vagrant
