@@ -88,7 +88,7 @@ fleedstix@testvm1:~/test$ kubectl get csr myuser -o jsonpath='{.status.certifica
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
- namespace: development
+ namespace: app-namespace
  name: dev
 rules:
 - apiGroups: [""]
@@ -103,7 +103,7 @@ kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: dev
-  namespace: development
+  namespace: app-namespace
 subjects:
 - kind: User
   name: dave
@@ -137,7 +137,7 @@ contexts:
         provider: minikube.sigs.k8s.io
         version: v1.25.2
       name: context_info
-    namespace: development
+    namespace: app-namespace
     user: dave
   name: dave-minikube
 current-context: dave-minikube
@@ -159,21 +159,21 @@ fleedstix@testvm10:~$ export KUBECONFIG=$PWD/kubeconfig
 Проверка прав:
 
 ```
-fleedstix@testvm10:~$ kubectl get pods --namespace=development
+fleedstix@testvm10:~$ kubectl get pods --namespace=app-namespace
 NAME                   READY   STATUS    RESTARTS   AGE
 www-84678bd648-rvl5h   1/1     Running   0          33m
 www-84678bd648-trx7n   1/1     Running   0          33m
 www-84678bd648-zxfvq   1/1     Running   0          10m
 fleedstix@testvm10:~$ kubectl get pods --namespace=default
 Error from server (Forbidden): pods is forbidden: User "dave" cannot list resource "pods" in API group "" in the namespace "default"
-fleedstix@testvm10:~$ kubectl delete pod www-84678bd648-zxfvq --namespace=development
-Error from server (Forbidden): pods "www-84678bd648-zxfvq" is forbidden: User "dave" cannot delete resource "pods" in API group "" in the namespace "development"
-fleedstix@testvm10:~$ kubectl logs www-84678bd648-zxfvq --namespace=development --v=5
+fleedstix@testvm10:~$ kubectl delete pod www-84678bd648-zxfvq --namespace=app-namespace
+Error from server (Forbidden): pods "www-84678bd648-zxfvq" is forbidden: User "dave" cannot delete resource "pods" in API group "" in the namespace "app-namespace"
+fleedstix@testvm10:~$ kubectl logs www-84678bd648-zxfvq --namespace=app-namespace --v=5
 I0608 14:51:00.876149   40939 cert_rotation.go:137] Starting client certificate rotation controller
 I0608 14:51:00.903884   40939 helpers.go:222] server response object: [{
   "metadata": {},
   "status": "Failure",
-  "message": "pods \"www-84678bd648-zxfvq\" is forbidden: User \"dave\" cannot get resource \"pods/log\" in API group \"\" in the namespace \"development\"",
+  "message": "pods \"www-84678bd648-zxfvq\" is forbidden: User \"dave\" cannot get resource \"pods/log\" in API group \"\" in the namespace \"app-namespace\"",
   "reason": "Forbidden",
   "details": {
     "name": "www-84678bd648-zxfvq",
@@ -181,11 +181,11 @@ I0608 14:51:00.903884   40939 helpers.go:222] server response object: [{
   },
   "code": 403
 }]
-Error from server (Forbidden): pods "www-84678bd648-zxfvq" is forbidden: User "dave" cannot get resource "pods/log" in API group "" in the namespace "development"
-fleedstix@testvm10:~$ kubectl describe pod  www-84678bd648-zxfvq --namespace=development --v=5
+Error from server (Forbidden): pods "www-84678bd648-zxfvq" is forbidden: User "dave" cannot get resource "pods/log" in API group "" in the namespace "app-namespace"
+fleedstix@testvm10:~$ kubectl describe pod  www-84678bd648-zxfvq --namespace=app-namespace --v=5
 I0608 14:51:36.336235   41025 cert_rotation.go:137] Starting client certificate rotation controller
 Name:         www-84678bd648-zxfvq
-Namespace:    development
+Namespace:    app-namespace
 Priority:     0
 Node:         minikube/192.168.49.2
 Start Time:   Wed, 08 Jun 2022 14:39:32 +0000
@@ -230,15 +230,15 @@ Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists fo
                              node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
 Events:                      <none>
 
-fleedstix@testvm10:~$ kubectl scale deployment www --replicas=5  --namespace=development
-Error from server (Forbidden): deployments.apps "www" is forbidden: User "dave" cannot get resource "deployments" in API group "apps" in the namespace "development"
+fleedstix@testvm10:~$ kubectl scale deployment www --replicas=5  --namespace=app-namespace
+Error from server (Forbidden): deployments.apps "www" is forbidden: User "dave" cannot get resource "deployments" in API group "apps" in the namespace "app-namespace"
 ```
 
 Проверка под minikube:
 
 ```
 fleedstix@testvm10:~$ export KUBECONFIG=~/.kube/config
-fleedstix@testvm10:~$ kubectl scale deployment www --replicas=5  --namespace=development
+fleedstix@testvm10:~$ kubectl scale deployment www --replicas=5  --namespace=app-namespace
 deployment.apps/www scaled
 ```
 
